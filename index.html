@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+  <title>Meme Maker Pro</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Impact&family=Roboto:wght@400;700&family=Poppins:wght@400;600;700&family=Oswald:wght@400;700&family=Bebas+Neue&family=Permanent+Marker&family=Anton&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- Splash Screen -->
+  <div id="splashScreen" class="splash-screen">
+    <div class="splash-content">
+      <div class="splash-icon">🎭</div>
+      <h1>Meme Maker Pro</h1>
+      <p>Create Epic Memes Instantly</p>
+      <div class="splash-version">v3.0</div>
+      <div class="loading-bar">
+        <div class="loading-fill"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main App -->
+  <div id="mainApp" class="main-app hidden">
+    
+    <!-- Header -->
+    <header class="header">
+      <div class="header-left">
+        <span class="header-icon">🎭</span>
+        <div>
+          <h1>Meme Maker Pro</h1>
+          <span class="header-sub" id="zoomLevel">100%</span>
+        </div>
+      </div>
+      <div class="header-right">
+        <button class="icon-btn" onclick="undoAction()" title="Undo">↩️</button>
+        <button class="icon-btn" onclick="redoAction()" title="Redo">↪️</button>
+        <button class="icon-btn" onclick="zoomOut()" title="Zoom Out">➖</button>
+        <button class="icon-btn" onclick="zoomIn()" title="Zoom In">➕</button>
+        <button class="icon-btn" onclick="toggleDarkMode()" title="Theme">🌙</button>
+        <button class="icon-btn" onclick="showHelp()" title="Help">❓</button>
+      </div>
+    </header>
+
+    <!-- Canvas Area -->
+    <div class="canvas-wrapper" id="canvasWrapper">
+      <div class="canvas-scaler" id="canvasScaler">
+        <div class="canvas-container" id="canvasContainer">
+          <canvas id="memeCanvas" width="600" height="600"></canvas>
+          <div id="overlayContainer"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Selection Bar -->
+    <div class="selection-bar hidden" id="selectionBar">
+      <button class="sel-btn edit" onclick="openEditPanel()"><span>✏️</span> Edit</button>
+      <button class="sel-btn copy" onclick="duplicateSelectedItem()"><span>📋</span> Copy</button>
+      <button class="sel-btn layerup" onclick="moveLayerUp()"><span>⬆️</span> Up</button>
+      <button class="sel-btn layerdown" onclick="moveLayerDown()"><span>⬇️</span> Down</button>
+      <button class="sel-btn delete" onclick="deleteSelectedItem()"><span>🗑️</span> Delete</button>
+      <button class="sel-btn close" onclick="deselectAll()"><span>✕</span> Close</button>
+    </div>
+
+    <!-- Main Toolbar -->
+    <div class="toolbar" id="mainToolbar">
+      <button class="tool-btn" onclick="showPanel('imagePanel')">
+        <span class="tool-icon">🖼️</span><span class="tool-label">Image</span>
+      </button>
+      <button class="tool-btn" onclick="showPanel('textPanel')">
+        <span class="tool-icon">✍️</span><span class="tool-label">Text</span>
+      </button>
+      <button class="tool-btn" onclick="showPanel('stickerPanel')">
+        <span class="tool-icon">😀</span><span class="tool-label">Sticker</span>
+      </button>
+      <button class="tool-btn" onclick="showPanel('drawPanel')">
+        <span class="tool-icon">🖌️</span><span class="tool-label">Draw</span>
+      </button>
+      <button class="tool-btn" onclick="showPanel('toolsPanel')">
+        <span class="tool-icon">🛠️</span><span class="tool-label">Tools</span>
+      </button>
+      <button class="tool-btn" onclick="showPanel('filterPanel')">
+        <span class="tool-icon">🎨</span><span class="tool-label">Filter</span>
+      </button>
+      <button class="tool-btn" onclick="showPanel('exportPanel')">
+        <span class="tool-icon">💾</span><span class="tool-label">Save</span>
+      </button>
+    </div>
+
+    <!-- ============ PANELS ============ -->
+
+    <!-- Image Panel -->
+    <div class="panel hidden" id="imagePanel">
+      <div class="panel-header">
+        <h2>🖼️ Image & Canvas</h2>
+        <button class="close-btn" onclick="hidePanel('imagePanel')">✕</button>
+      </div>
+      <div class="panel-body">
+        <div class="image-options">
+          <label class="upload-btn">
+            📁 Gallery Se Choose
+            <input type="file" accept="image/*" onchange="loadImage(event)" hidden>
+          </label>
+          <label class="upload-btn camera-btn">
+            📷 Camera Se Photo
+            <input type="file" accept="image/*" capture="environment" onchange="loadImage(event)" hidden>
+          </label>
+          <button class="upload-btn bg-btn" onclick="showPanel('bgColorPanel')">🎨 Background Color</button>
+        </div>
+
+        <h3 class="section-title">📐 Aspect Ratio</h3>
+        <div class="ratio-grid">
+          <button class="ratio-btn" onclick="setCanvasRatio(1, 1, this)">
+            <div class="ratio-preview" style="width:30px;height:30px"></div><span>1:1</span>
+          </button>
+          <button class="ratio-btn" onclick="setCanvasRatio(4, 5, this)">
+            <div class="ratio-preview" style="width:24px;height:30px"></div><span>4:5</span>
+          </button>
+          <button class="ratio-btn" onclick="setCanvasRatio(9, 16, this)">
+            <div class="ratio-preview" style="width:18px;height:32px"></div><span>9:16</span>
+          </button>
+          <button class="ratio-btn" onclick="setCanvasRatio(16, 9, this)">
+            <div class="ratio-preview" style="width:32px;height:18px"></div><span>16:9</span>
+          </button>
+          <button class="ratio-btn" onclick="setCanvasRatio(3, 4, this)">
+            <div class="ratio-preview" style="width:22px;height:30px"></div><span>3:4</span>
+          </button>
+          <button class="ratio-btn" onclick="setCanvasRatio(4, 3, this)">
+            <div class="ratio-preview" style="width:30px;height:22px"></div><span>4:3</span>
+          </button>
+          <button class="ratio-btn" onclick="setCanvasRatio(2, 3, this)">
+            <div class="ratio-preview" style="width:20px;height:30px"></div><span>2:3</span>
+          </button>
+          <button class="ratio-btn free-ratio" onclick="showPanel('customSizePanel')">
+            <div class="ratio-preview" style="width:28px;height:22px;border-style:dashed">⚙️</div><span>Custom</span>
+          </button>
+        </div>
+
+        <h3 class="section-title">📋 Ready Templates</h3>
+        <div class="templates-grid" id="templatesGrid"></div>
+
+        <h3 class="section-title">🖼️ Image Fit</h3>
+        <div class="fit-options">
+          <button class="style-btn" onclick="fitImageCover()">Cover</button>
+          <button class="style-btn" onclick="fitImageContain()">Contain</button>
+          <button class="style-btn" onclick="fitImageStretch()">Stretch</button>
+          <button class="style-btn" onclick="fitImageCenter()">Center</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Custom Size Panel -->
+    <div class="panel hidden" id="customSizePanel">
+      <div class="panel-header">
+        <h2>⚙️ Custom Size</h2>
+        <button class="close-btn" onclick="hidePanel('customSizePanel')">✕</button>
+      </div>
+      <div class="panel-body">
+        <div class="custom-size-form">
+          <div class="size-input-group">
+            <label>Width (px)</label>
+            <input type="number" id="customWidth" value="600" min="100" max="2000">
+          </div>
+          <div class="size-input-group">
+            <label>Height (px)</label>
+            <input type="number" id="customHeight" value="600" min="100" max="2000">
+          </div>
+          <div class="size-presets">
+            <button class="preset-btn" onclick="setCustomPreset(1080, 1080)">Instagram Post</button>
+            <button class="preset-btn" onclick="setCustomPreset(1080, 1920)">Instagram Story</button>
+            <button class="preset-btn" onclick="setCustomPreset(1280, 720)">YouTube Thumb</button>
+            <button class="preset-btn" onclick="setCustomPreset(820, 312)">Facebook Cover</button>
+            <button class="preset-btn" onclick="setCustomPreset(1500, 500)">Twitter Header</button>
+            <button class="preset-btn" onclick="setCustomPreset(1024, 512)">Blog Banner</button>
+          </div>
+          <button class="add-text-btn" onclick="applyCustomSize()">✅ Apply Size</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Background Color Panel -->
+    <div class="panel hidden" id="bgColorPanel">
+      <div class="panel-header">
+        <h2>🎨 Background</h2>
+        <button class="close-btn" onclick="hidePanel('bgColorPanel')">✕</button>
+      </div>
+      <div class="panel-body">
+        <h3 class="section-title">🎨 Solid Colors</h3>
+        <div class="color-grid" id="bgColorGrid"></div>
+        <h3 class="section-title">✨ Gradients</h3>
+        <div class="gradient-grid" id="gradientGrid"></div>
+        <h3 class="section-title">🌈 Custom Color</h3>
+        <div class="custom-color-picker">
+          <input type="color" id="customBgColor" value="#6c5ce7">
+          <button class="style-btn" onclick="applyCustomBgColor()">Apply</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- TOOLS PANEL (NEW - Background Remove, Flip, Rotate etc) -->
+    <div class="panel hidden" id="toolsPanel">
+      <div class="panel-header">
+        <h2>🛠️ Advanced Tools</h2>
+        <button class="close-btn" onclick="hidePanel('toolsPanel')">✕</button>
+      </div>
+      <div class="panel-body">
+        
+        <h3 class="section-title">✂️ Background Remover</h3>
+        <div class="tool-info">
+          <p>🤖 Auto detect aur background remove karo. Best plain background wali photos ke liye.</p>
+        </div>
+        <h4 class="mini-title">🎯 Tolerance (Sensitivity)</h4>
+        <div class="slider-container">
+          <input type="range" id="bgToleranceSlider" min="20" max="150" value="50">
+          <span id="bgToleranceValue">50</span>
+        </div>
+        <button class="tool-action-btn bg-remove-btn" onclick="removeBackgroundAdvanced(document.getElementById('bgToleranceSlider').value)">
+          ✂️ Remove Background
+        </button>
+
+        <h3 class="section-title">🔄 Transform</h3>
+        <div class="tool-grid">
+          <button class="tool-action-btn" onclick="flipCanvasH()">
+            <span class="tool-emoji">↔️</span>
+            <span>Flip Horizontal</span>
+          </button>
+          <button class="tool-action-btn" onclick="flipCanvasV()">
+            <span class="tool-emoji">↕️</span>
+            <span>Flip Vertical</span>
+          </button>
+          <button class="tool-action-btn" onclick="rotateCanvas90()">
+            <span class="tool-emoji">🔄</span>
+            <span>Rotate 90°</span>
+          </button>
+          <button class="tool-action-btn" onclick="toggleGrid()">
+            <span class="tool-emoji">📏</span>
+            <span>Toggle Grid</span>
+          </button>
+        </div>
+
+        <h3 class="section-title">⚠️ Danger Zone</h3>
+        <button class="tool-action-btn danger-btn" onclick="resetCanvas()">
+          <span class="tool-emoji">🗑️</span>
+          <span>Reset Everything</span>
+        </button>
+
+        <h3 class="section-title">💡 Pro Tips</h3>
+        <div class="tips-list">
+          <div class="tip-item">🎯 Plain background wali photos me BG remove best kaam karta hai</div>
+          <div class="tip-item">📏 Grid on karke text aur stickers ko perfectly align karo</div>
+          <div class="tip-item">🔍 2 finger se pinch karke zoom karo</div>
+          <div class="tip-item">👆 Text/Sticker par double tap = Edit</div>
+          <div class="tip-item">👆 Ek tap = Select + Move</div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Text Panel -->
+    <div class="panel hidden" id="textPanel">
+      <div class="panel-header">
+        <h2>✍️ Add Text</h2>
+        <button class="close-btn" onclick="hidePanel('textPanel')">✕</button>
+      </div>
+      <div class="panel-body">
+        <div class="text-input-area">
+          <textarea id="textInput" placeholder="Yahan text likho..." rows="3"></textarea>
+          <button class="add-text-btn" onclick="addTextLayer()">+ Add Text</button>
+        </div>
+        <div class="quick-text-section">
+          <h3 class="section-title">⚡ Quick Templates</h3>
+          <div class="quick-texts">
+            <button class="quick-text-btn" onclick="addQuickText('WHEN YOU')">WHEN YOU...</button>
+            <button class="quick-text-btn" onclick="addQuickText('ME WHEN')">ME WHEN...</button>
+            <button class="quick-text-btn" onclick="addQuickText('NOBODY:')">NOBODY:</button>
+            <button class="quick-text-btn" onclick="addQuickText('POV:')">POV:</button>
+            <button class="quick-text-btn" onclick="addQuickText('EXPECTATION vs REALITY')">EXPECT vs REAL</button>
+            <button class="quick-text-btn" onclick="addQuickText('THAT MOMENT WHEN')">THAT MOMENT...</button>
+            <button class="quick-text-btn" onclick="addQuickText('HOW IT STARTED')">STARTED vs GOING</button>
+            <button class="quick-text-btn" onclick="addQuickText('TELL ME WITHOUT TELLING ME')">TELL ME...</button>
+          </div>
+        </div>
+        <h3 class="section-title">📑 Added Texts</h3>
+        <div id="textLayersList" class="layers-list"></div>
+      </div>
+    </div>
+
+    <!-- Text Edit Panel -->
+    <div class="panel hidden" id="textEditPanel">
+      <div class="panel-header">
+        <h2>✏️ Edit Text</h2>
+        <button class="close-btn" onclick="hidePanel('textEditPanel')">✕</button>
+      </div>
+      <div class="panel-body">
+        <div class="text-input-area">
+          <textarea id="editTextInput" placeholder="Text edit karo..." rows="2"></textarea>
+          <button class="update-text-btn" onclick="updateTextContent()">✅ Update</button>
+        </div>
+        <h3 class="section-title">📏 Font Size</h3>
+        <div class="slider-container">
+          <input type="range" id="fontSizeSlider" min="8" max="120" value="32" oninput="updateSelectedText()">
+          <span id="fontSizeValue">32px</span>
+        </div>
+        <h3 class="section-title">🔤 Font</h3>
+        <div class="font-options" id="fontOptions">
+          <button class="font-btn active" onclick="changeFont('Impact', this)" style="font-family:Impact">Impact</button>
+          <button class="font-btn" onclick="changeFont('Arial Black', this)" style="font-family:'Arial Black'">Arial B</button>
+          <button class="font-btn" onclick="changeFont('Poppins', this)" style="font-family:Poppins">Poppins</button>
+          <button class="font-btn" onclick="changeFont('Roboto', this)" style="font-family:Roboto">Roboto</button>
+          <button class="font-btn" onclick="changeFont('Oswald', this)" style="font-family:Oswald">Oswald</button>
+          <button class="font-btn" onclick="changeFont('Bebas Neue', this)" style="font-family:'Bebas Neue'">Bebas</button>
+          <button class="font-btn" onclick="changeFont('Permanent Marker', this)" style="font-family:'Permanent Marker'">Marker</button>
+          <button class="font-btn" onclick="changeFont('Anton', this)" style="font-family:Anton">Anton</button>
+          <button class="font-btn" onclick="changeFont('Georgia', this)" style="font-family:Georgia">Georgia</button>
+          <button class="font-btn" onclick="changeFont('Courier New', this)" style="font-family:'Courier New'">Courier</button>
+          <button class="font-btn" onclick="changeFont('Comic Sans MS', this)" style="font-family:'Comic Sans MS'">Comic</button>
+          <button class="font-btn" onclick="changeFont('Times New Roman', this)" style="font-family:'Times New Roman'">Times</button>
+        </div>
+        <h3 class="section-title">🎨 Text Color</h3>
+        <div class="color-grid" id="textColorGrid"></div>
+        <div class="custom-color-picker">
+          <input type="color" id="customTextColor" value="#ffffff" onchange="applyCustomTextColor()">
+          <span>Custom</span>
+        </div>
+        <h3 class="section-title">🎨 Outline Color</h3>
+        <div class="color-grid" id="outlineColorGrid"></div>
+        <h3 class="section-title">⚙️ Style</h3>
+        <div class="style-options">
+          <button class="style-btn" id="boldBtn" onclick="toggleBold()"><b>B</b></button>
+          <button class="style-btn" id="italicBtn" onclick="toggleItalic()"><i>I</i></button>
+          <button class="style-btn" id="underlineBtn" onclick="toggleUnderline()"><u>U</u></button>
+          <button class="style-btn" id="shadowBtn" onclick="toggleShadow()">Shadow</button>
+          <button class="style-btn" id="allCapsBtn" onclick="toggleCaps()">AA</button>
+          <button class="style-btn" id="glowBtn" onclick="toggleGlow()">Glow</button>
+        </div>
+        <h3 class="section-title">📐 Align</h3>
+        <div class="align-options">
+          <button class="style-btn" onclick="changeAlign('left')">◀</button>
+          <button class="style-btn" onclick="changeAlign('center')">☰</button>
+          <button class="style-btn" onclick="changeAlign('right')">▶</button>
+        </div>
+        <h3 class="section-title">📏 Outline Width</h3>
+        <div class="slider-container">
+          <input type="range" id="outlineSlider" min="0" max="12" value="2" oninput="updateSelectedText()">
+          <span id="outlineValue">2px</span>
+        </div>
+        <h3 class="section-title">👻 Opacity</h3>
+        <div class="slider-container">
+          <input type="range" id="opacitySlider" min="10" max="100" value="100" oninput="updateSelectedText()">
+          <span id="opacityValue">100%</span>
+        </div>
+        <h3 class="section-title">🔄 Rotation</h3>
+        <div class="slider-container">
+          <input type="range" id="rotationSlider" min="-180" max="180" value="0" oninput="updateSelectedText()">
+          <span id="rotationValue">0°</span>
+        </div>
+        <h3 class="section-title">↕️ Line Height</h3>
+        <div class="slider-container">
+          <input type="range" id="lineHeightSlider" min="80" max="250" value="120" oninput="updateSelectedText()">
+          <span id="lineHeightValue">120%</span>
+        </div>
+        <h3 class="section-title">↔️ Letter Spacing</h3>
+        <div class="slider-container">
+          <input type="range" id="letterSpacingSlider" min="-5" max="30" value="0" oninput="updateSelectedText()">
+          <span id="letterSpacingValue">0px</span>
+        </div>
+        <h3 class="section-title">🎨 Text Background</h3>
+        <div class="color-grid" id="textBgColorGrid"></div>
+        <button class="style-btn" onclick="clearTextBg()" style="margin-top:8px;width:100%">🚫 No Background</button>
+        <div style="height:20px"></div>
+        <button class="delete-text-btn" onclick="deleteSelectedItem()">🗑️ Delete This Text</button>
+      </div>
+    </div>
+
+    <!-- Sticker Panel -->
+    <div class="panel hidden" id="stickerPanel">
+      <div class="panel-header">
+        <h2>😀 Stickers</h2>
+        <button class="close-btn" onclick="hidePanel('stickerPanel')">✕</button>
+      </div>
+      <div class="panel-body">
+        <div class="sticker-search">
+          <input type="text" id="stickerSearch" placeholder="🔍 Search sticker..." oninput="searchStickers()">
+        </div>
+        <div id="stickerResults"></div>
+        <h3 class="section-title">😂 Faces</h3>
+        <div class="sticker-grid" id="emojiGrid"></div>
+        <h3 class="section-title">👆 Gestures</h3>
+        <div class="sticker-grid" id="gestureGrid"></div>
+        <h3 class="section-title">❤️ Symbols</h3>
+        <div class="sticker-grid" id="symbolGrid"></div>
+        <h3 class="section-title">🎉 Party</h3>
+        <div class="sticker-grid" id="partyGrid"></div>
+        <h3 class="section-title">🐱 Animals</h3>
+        <div class="sticker-grid" id="animalGrid"></div>
+        <h3 class="section-title">🍕 Food</h3>
+        <div class="sticker-grid" id="foodGrid"></div>
+        <h3 class="section-title">💼 Objects</h3>
+        <div class="sticker-grid" id="objectGrid"></div>
+        <h3 class="section-title">🚗 Travel</h3>
+        <div class="sticker-grid" id="travelGrid"></div>
+        <h3 class="section-title">⚽ Sports</h3>
+        <div class="sticker-grid" id="sportsGrid"></div>
+        <h3 class="section-title">🌦️ Weather</h3>
+        <div class="sticker-grid" id="weatherGrid"></div>
+        <h3 class="section-title">🔢 Numbers</h3>
+        <div class="sticker-grid" id="numberGrid"></div>
+      </div>
+    </div>
+
+    <!-- Sticker Edit Panel -->
+    <div class="panel hidden" id="stickerEditPanel">
+      <div class="panel-header">
+        <h2>😀 Edit Sticker</h2>
+        <button class="close-btn" onclick="hidePanel('stickerEditPanel')">✕</button>
+      </div>
+      <div class="panel-body">
+        <h3 class="section-title">📏 Size</h3>
+        <div class="slider-container">
+          <input type="range" id="stickerSizeSlider" min="15" max="250" value="50" oninput="updateSelectedSticker()">
+          <span id="stickerSizeValue">50px</span>
+        </div>
+        <h3 class="section-title">🔄 Rotation</h3>
+        <div class="slider-container">
+          <input type="range" id="stickerRotationSlider" min="-180" max="180" value="0" oninput="updateSelectedSticker()">
+          <span id="stickerRotationValue">0°</span>
+        </div>
+        <h3 class="section-title">👻 Opacity</h3>
+        <div class="slider-container">
+          <input type="range" id="stickerOpacitySlider" min="10" max="100" value="100" oninput="updateSelectedSticker()">
+          <span id="stickerOpacityValue">100%</span>
+        </div>
+        <h3 class="section-title">🔀 Flip</h3>
+        <div class="style-options">
+          <button class="style-btn" onclick="flipSticker('h')">↔️ Horizontal</button>
+          <button class="style-btn" onclick="flipSticker('v')">↕️ Vertical</button>
+        </div>
+        <div style="height:20px"></div>
+        <button class="delete-text-btn" onclick="deleteSelectedItem()">🗑️ Delete Sticker</button>
+      </div>
+    </div>
+
+    <!-- Draw Panel -->
+    <div class="panel hidden" id="drawPanel">
+      <div class="panel-header">
+        <h2>🖌️ Drawing</h2>
+        <button class="close-btn" onclick="hidePanel('drawPanel')">✕</button>
+      </div>
+      <div class="panel-body">
+        <h3 class="section-title">🖌️ Brush Size</h3>
+        <div class="slider-container">
+          <input type="range" id="brushSize" min="1" max="40" value="3" oninput="updateBrushSize()">
+          <span id="brushSizeValue">3px</span>
+        </div>
+        <h3 class="section-title">🎨 Color</h3>
+        <div class="color-grid" id="brushColorGrid"></div>
+        <div class="custom-color-picker">
+          <input type="color" id="customBrushColor" value="#ff0000" onchange="applyCustomBrushColor()">
+          <span>Custom</span>
+        </div>
+        <h3 class="section-title">👻 Opacity</h3>
+        <div class="slider-container">
+          <input type="range" id="brushOpacity" min="10" max="100" value="100" oninput="updateBrushOpacity()">
+          <span id="brushOpacityValue">100%</span>
+        </div>
+        <h3 class="section-title">🔧 Tools</h3>
+        <div class="draw-tools">
+          <button class="style-btn active" id="penTool" onclick="setDrawTool('pen')">✏️ Pen</button>
+          <button class="style-btn" id="eraserTool" onclick="setDrawTool('eraser')">🧹 Eraser</button>
+        </div>
+        <div class="draw-actions">
+          <button class="style-btn" onclick="undoDrawing()">↩️ Undo</button>
+          <button class="style-btn" onclick="clearDrawing()">🗑️ Clear</button>
+        </div>
+        <button class="toggle-draw-btn" id="toggleDrawBtn" onclick="toggleDrawMode()">🖌️ Start Drawing</button>
+      </div>
+    </div>
+
+    <!-- Filter Panel -->
+    <div class="panel hidden" id="filterPanel">
+      <div class="panel-header">
+        <h2>🎨 Filters</h2>
+        <button class="close-btn" onclick="hidePanel('filterPanel')">✕</button>
+      </div>
+      <div class="panel-body">
+        <div class="filter-grid" id="filterGrid"></div>
+        <h3 class="section-title">🔧 Adjustments</h3>
+        <div class="adjustment">
+          <label>☀️ Brightness</label>
+          <div class="slider-container">
+            <input type="range" id="brightnessSlider" min="0" max="200" value="100" oninput="applyAdjustments()">
+            <span id="brightnessValue">100%</span>
+          </div>
+        </div>
+        <div class="adjustment">
+          <label>🔲 Contrast</label>
+          <div class="slider-container">
+            <input type="range" id="contrastSlider" min="0" max="200" value="100" oninput="applyAdjustments()">
+            <span id="contrastValue">100%</span>
+          </div>
+        </div>
+        <div class="adjustment">
+          <label>🎨 Saturation</label>
+          <div class="slider-container">
+            <input type="range" id="saturationSlider" min="0" max="200" value="100" oninput="applyAdjustments()">
+            <span id="saturationValue">100%</span>
+          </div>
+        </div>
+        <div class="adjustment">
+          <label>🌫️ Blur</label>
+          <div class="slider-container">
+            <input type="range" id="blurSlider" min="0" max="10" value="0" oninput="applyAdjustments()">
+            <span id="blurValue">0px</span>
+          </div>
+        </div>
+        <div class="adjustment">
+          <label>🔄 Hue</label>
+          <div class="slider-container">
+            <input type="range" id="hueSlider" min="0" max="360" value="0" oninput="applyAdjustments()">
+            <span id="hueValue">0°</span>
+          </div>
+        </div>
+        <div class="adjustment">
+          <label>🌑 Sepia</label>
+          <div class="slider-container">
+            <input type="range" id="sepiaSlider" min="0" max="100" value="0" oninput="applyAdjustments()">
+            <span id="sepiaValue">0%</span>
+          </div>
+        </div>
+        <button class="reset-btn" onclick="resetFilters()">🔄 Reset All</button>
+      </div>
+    </div>
+
+    <!-- Export Panel -->
+    <div class="panel hidden" id="exportPanel">
+      <div class="panel-header">
+        <h2>💾 Save & Share</h2>
+        <button class="close-btn" onclick="hidePanel('exportPanel')">✕</button>
+      </div>
+      <div class="panel-body">
+        <h3 class="section-title">📐 Quality</h3>
+        <div class="quality-options">
+          <button class="quality-btn" onclick="setQuality('low', this)">Low<br><small>480p</small></button>
+          <button class="quality-btn active" onclick="setQuality('medium', this)">Medium<br><small>720p</small></button>
+          <button class="quality-btn" onclick="setQuality('high', this)">High<br><small>1080p</small></button>
+          <button class="quality-btn" onclick="setQuality('ultra', this)">Ultra<br><small>1440p</small></button>
+        </div>
+        <h3 class="section-title">📁 Format</h3>
+        <div class="format-options">
+          <button class="format-btn active" onclick="setFormat('png', this)">PNG</button>
+          <button class="format-btn" onclick="setFormat('jpeg', this)">JPEG</button>
+          <button class="format-btn" onclick="setFormat('webp', this)">WEBP</button>
+        </div>
+        <h3 class="section-title">💧 Watermark</h3>
+        <div class="watermark-options">
+          <label class="toggle-label">
+            <input type="checkbox" id="watermarkToggle">
+            <span class="toggle-slider"></span>
+            Watermark
+          </label>
+          <input type="text" id="watermarkText" value="Meme Maker Pro" placeholder="Watermark text">
+        </div>
+        <button class="export-btn download-btn" onclick="downloadMeme()">📥 Download</button>
+        <button class="export-btn share-btn" onclick="shareMeme()">📤 Share</button>
+      </div>
+    </div>
+
+    <!-- Help Modal -->
+    <div class="modal hidden" id="helpModal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>❓ Help Guide</h2>
+          <button class="close-btn" onclick="hideModal('helpModal')">✕</button>
+        </div>
+        <div class="modal-body">
+          <div class="help-item"><span>1️⃣</span><p>🖼️ Image se photo ya template select karo</p></div>
+          <div class="help-item"><span>2️⃣</span><p>✍️ Text add karo aur drag karke move karo</p></div>
+          <div class="help-item"><span>3️⃣</span><p>📱 Text/Sticker par 1 tap = Select + Move</p></div>
+          <div class="help-item"><span>4️⃣</span><p>👆 Double tap = Direct Edit panel kholo</p></div>
+          <div class="help-item"><span>5️⃣</span><p>✏️ Edit button se settings kholo</p></div>
+          <div class="help-item"><span>6️⃣</span><p>🗑️ Delete button se remove karo</p></div>
+          <div class="help-item"><span>7️⃣</span><p>🔍 2 finger pinch se zoom in/out</p></div>
+          <div class="help-item"><span>8️⃣</span><p>➕➖ buttons se bhi zoom karo</p></div>
+          <div class="help-item"><span>9️⃣</span><p>🛠️ Tools me: BG Remove, Flip, Rotate, Grid</p></div>
+          <div class="help-item"><span>🔟</span><p>↩️↪️ Undo/Redo se galti fix karo</p></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Edit Text Modal -->
+    <div class="modal hidden" id="editTextModal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>✏️ Edit Text</h2>
+          <button class="close-btn" onclick="hideModal('editTextModal')">✕</button>
+        </div>
+        <div class="modal-body">
+          <textarea id="modalTextInput" rows="3" placeholder="Text likho..."></textarea>
+          <button class="add-text-btn" onclick="applyModalTextEdit()" style="margin-top:10px">✅ Done</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast hidden" id="toast">
+      <span id="toastMessage"></span>
+    </div>
+
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
